@@ -5,13 +5,16 @@ import (
 	"strings"
 	"golang.org/x/net/html"
 	"log/slog"
+	"net/http"
+	"net/url"
+	"time"
 
 	models "github.com/nuwanwimalasooriya/go-wa-api/models"
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Analyzer interface {
-	Analyze(content string) models.FetchResponse
+	Analyze(content string, baseURL string) models.FetchResponse
 }
 
 type HTMLAnalyzer struct {
@@ -22,7 +25,7 @@ func NewHTMLAnalyzer(logger *slog.Logger) *HTMLAnalyzer {
 	return &HTMLAnalyzer{logger: logger}
 }
 
-func (ha *HTMLAnalyzer) Analyze(content string) models.FetchResponse {
+func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResponse {
 	resp := models.FetchResponse{
 		Headings:        []models.Heading{},
 		Links:           []string{},
@@ -74,6 +77,47 @@ func (ha *HTMLAnalyzer) Analyze(content string) models.FetchResponse {
 			}
 		}
 	})
+	base, _ := url.Parse(baseURL)
+	internalLinks := map[string]struct{}{}
+	externalLinks := map[string]struct{}{}
+	inaccessibleLinks := map[string]struct{}{}
+
+	doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
+		href, _ := s.Attr("href")
+		href = strings.TrimSpace(href)
+		if href == "" || strings.HasPrefix(href, "javascript:") || strings.HasPrefix(href, "#") {
+			return
+		}
+
+		u, err := url.Parse(href)
+		if err != nil {
+			return
+		}
+
+		absURL := u.String()
+		if !u.IsAbs() && base != nil {
+			absURL = base.ResolveReference(u).String()
+		}
+
+		// Classify internal vs external
+		if base != nil && u.Host == base.Host {
+			internalLinks[absURL] = struct{}{}
+		} else {
+			externalLinks[absURL] = struct{}{}
+		}
+
+		// Check accessibility (simple HEAD request with timeout)
+		client := &http.Client{Timeout: 5 * time.Second}
+		respHead, err := client.Head(absURL)
+		if err != nil || respHead.StatusCode < 200 || respHead.StatusCode >= 400 {
+			inaccessibleLinks[absURL] = struct{}{}
+		}
+	})
+
+	// Fill response
+	resp.InternalLinks = len(internalLinks)
+	resp.ExternalLinks = len(externalLinks)
+	resp.InaccessibleLinks = len(inaccessibleLinks)
 
 	if doc.Find("input[type='password']").Length() > 0 {
 		resp.LoginDetected = true

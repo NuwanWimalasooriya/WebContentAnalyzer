@@ -42,11 +42,11 @@ func (fs *FetchService) HandleFetch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := fs.analyzer.Analyze(content)
+	resp := fs.analyzer.Analyze(content,req.URL)
 	writeJSON(w, resp, http.StatusOK)
 }
 
-// // GET /fetch?url=
+ // GET /fetch?url=
 func (fs *FetchService) HandleFetchGet(w http.ResponseWriter, r *http.Request) {
 	url := strings.TrimSpace(r.URL.Query().Get("url"))
 	if url == "" {
@@ -62,7 +62,7 @@ func (fs *FetchService) HandleFetchGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := fs.analyzer.Analyze(content)
+	resp := fs.analyzer.Analyze(content,url)
 	writeJSON(w, resp, http.StatusOK)
 }
 
