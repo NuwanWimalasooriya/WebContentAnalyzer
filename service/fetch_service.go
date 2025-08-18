@@ -26,12 +26,31 @@ func NewFetchService(fetcher Fetcher, analyzer Analyzer, logger *slog.Logger) *F
 	}
 }
 
+// POST /fetch
+func (fs *FetchService) HandleFetch(w http.ResponseWriter, r *http.Request) {
+	req, err := validateRequest(r)
+	if err != nil {
+		fs.logger.Warn("Invalid fetch request", "err", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	content, err := fs.fetcher.ContentFetch(r.Context(), req.URL)
+	if err != nil {
+		fs.logger.Error("Fetch failed", "url", req.URL, "err", err)
+		http.Error(w, err. Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := fs.analyzer.Analyze(content)
+	writeJSON(w, resp, http.StatusOK)
+}
 
 // // GET /fetch?url=
 func (fs *FetchService) HandleFetchGet(w http.ResponseWriter, r *http.Request) {
 	url := strings.TrimSpace(r.URL.Query().Get("url"))
 	if url == "" {
-		fs.logger.Warn("Missing URL parameter")
+		fs.logger.Error("Missing URL parameter")
 		http.Error(w, "url parameter required", http.StatusBadRequest)
 		return
 	}

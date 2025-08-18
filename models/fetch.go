@@ -8,6 +8,7 @@ type Heading struct {
 
 type FetchResponse struct {
 	Title           string   `json:"title"`
+	HtmlVersion		string	 `json:"htmlVersion"`
 	Headings        []Heading `json:"headings"`
 	Links           []string `json:"links"`
 	LoginDetected   bool     `json:"login_detected"`

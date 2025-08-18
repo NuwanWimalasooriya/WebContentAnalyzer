@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"strings"
-
+	"golang.org/x/net/html"
 	"log/slog"
 
 	models "github.com/nuwanwimalasooriya/go-wa-api/models"
@@ -38,6 +38,8 @@ func (ha *HTMLAnalyzer) Analyze(content string) models.FetchResponse {
 	}
 
 	resp.Title = strings.TrimSpace(doc.Find("title").First().Text())
+
+	resp.HtmlVersion = findHtmlVersion(content)
 
 	headingsSet := map[string]struct{}{}
 	for i := 1; i <= 6; i++ {
@@ -103,4 +105,48 @@ func uniqueStrings(in []string) []string {
 		}
 	}
 	return out
+}
+
+func findHtmlVersion(htmlDoc string)string{
+		reader:=strings.NewReader(htmlDoc)	
+		tokenizer:=html.NewTokenizer(reader)
+
+for {
+        token := tokenizer.Next()
+
+        switch token {
+        case html.ErrorToken:
+            return "Unknown" // reached EOF without finding doctype
+
+        case html.DoctypeToken:
+            t := tokenizer.Token()
+            doc := strings.ToLower(t.Data)
+
+            // Basic checks
+            if doc == "html" && len(t.Attr) == 0 {
+                return "HTML5"
+            }
+
+            // Check for known doctypes in attributes
+            doctypeStr := t.Data
+            for _, attr := range t.Attr {
+                doctypeStr += " " + attr.Val
+            }
+
+            if strings.Contains(doctypeStr, "xhtml") {
+                return "XHTML"
+            }
+            if strings.Contains(doctypeStr, "4.01") {
+                return "HTML 4.01"
+            }
+            if strings.Contains(doctypeStr, "transitional") {
+                return "HTML 4.01 Transitional"
+            }
+            if strings.Contains(doctypeStr, "strict") {
+                return "HTML 4.01 Strict"
+            }
+
+            return "Unknown"
+        }
+    }
 }
