@@ -1,21 +1,7 @@
 Web Analyzer API (Go)
 
 📦 Project Structure
-.
-├──-main.go        # Entry point
-├── middleware/
-│   └── middleware.go
-├── models/
-│   └── fetch.go
-├── service/
-│       └── analyzer.go 
-│       └── fetch_service.go 
-│       └── fetcher.go 
-│       └── fetch_service_test.go 
-├── go.mod
-├── go.sum
-├── Dockerfile
-└── README.md
+
 <img width="244" height="269" alt="image" src="https://github.com/user-attachments/assets/03ad2ec7-7fba-4216-a651-3dc415d11e06" />
 
 
