@@ -4,7 +4,8 @@ Pre requirements
 1. Install Docker Desktop
 2. Install Golang 1.24 version
    Note: If you have any other golang latest version it should be updated the first line of the docker file. But not tested this scenario.
-       FROM golang:1.24-alpine AS builder
+
+   FROM golang:1.24-alpine AS builder
 
 📦 Project Structure
 
@@ -27,13 +28,6 @@ Now the API is available at: http://localhost:8080/
 
 🔥 Example Request
 
-Send a POST request with a JSON body containing the target URL:
-
-    curl --location 'localhost:8080/api/fetch' \
-    --header 'Content-Type: application/json' \
-    --data '{
-        "url":"https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F"
-    }'
 
 Send a GET request with your sample url:
 
@@ -48,9 +42,19 @@ Go to the main directory via the command prompt and execute below commands
 1. go mod tidy     -- install dependancies
 2. go run main.go or go run .
 
-
+ 
 🧪 Run Unit Tests
 
 1. Open command prompt from the main folder
 2. Go into the service folder (cd service)
 3. Execute go test ./...
+
+# Challenges
+1. As I am new to golang, initially implemented single page. Then had to refer lot of videos articles to understand how to use middleware, pointers and refactoring techniques.
+2. Difficult to identify the requested informations like spefic kind of links then refered similar logic through intenet and customised as required
+3. Even created the docker image, it was not running properly and got help from internet to do some customizations.
+
+# Possible Improvements
+ 1. Analyzed responses can be saved in a database and then existing responses can be retrieved without doing analysis again.
+ 2. Authentication can be applied to avoid accessing unknown users.
+ 3. Parallel processing can be applied for treating multiple requests using WaitGroup.
