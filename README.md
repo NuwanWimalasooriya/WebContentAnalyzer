@@ -44,3 +44,10 @@ Send a GET request with your sample url:
 🛠 Development (without Docker)
 
 Go to the main directory via the command prompt and execute "go run main.go" or "go run ."
+
+
+🧪 Run Unit Tests
+
+1. Open command prompt from the main folder
+2. Go into the service folder (cd service)
+3. Execute go test ./...
