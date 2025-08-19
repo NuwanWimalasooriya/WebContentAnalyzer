@@ -10,10 +10,10 @@ This project is a simple Go web service that fetches and analyzes web page conte
 🚀 Run with Docker
 1. Build Docker Image
 
-docker build -t web-analyzer:latest .
+    docker build -t web-analyzer:latest .
 
 2. Run Container
-docker run -it --rm -p 8080:8080 web-analyzer:latest
+    docker run -it --rm -p 8080:8080 web-analyzer:latest
 
 Now the API is available at: http://localhost:8080/
 
@@ -23,15 +23,15 @@ Now the API is available at: http://localhost:8080/
 
 Send a POST request with a JSON body containing the target URL:
 
-curl --location 'localhost:8080/api/fetch' \
---header 'Content-Type: application/json' \
---data '{
-    "url":"https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F"
-}'
+    curl --location 'localhost:8080/api/fetch' \
+    --header 'Content-Type: application/json' \
+    --data '{
+        "url":"https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F"
+    }'
 
 Send a GET request with your sample url:
 
-curl --location 'localhost:8080/api/fetch?url=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F'
+    curl --location 'localhost:8080/api/fetch?url=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F'
 
 
 
