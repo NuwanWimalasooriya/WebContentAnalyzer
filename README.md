@@ -1,5 +1,11 @@
 Web Analyzer API (Go)
 
+Pre requirements
+1. Install Docker Desktop
+2. Install Golang 1.24 version
+   Note: If you have any other golang latest version it should be updated the first line of the docker file. But not tested this scenario.
+       FROM golang:1.24-alpine AS builder
+
 📦 Project Structure
 
 <img width="244" height="269" alt="image" src="https://github.com/user-attachments/assets/03ad2ec7-7fba-4216-a651-3dc415d11e06" />
