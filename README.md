@@ -43,7 +43,10 @@ Send a GET request with your sample url:
 
 🛠 Development (without Docker)
 
-Go to the main directory via the command prompt and execute "go run main.go" or "go run ."
+
+Go to the main directory via the command prompt and execute below commands
+1. go mod tidy     -- install dependancies
+2. go run main.go or go run .
 
 
 🧪 Run Unit Tests
