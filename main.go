@@ -32,7 +32,6 @@ func NewRouter(logger *slog.Logger, fetchSvc *service.FetchService) http.Handler
 	middlewarex.Register(r)
 
 	r.Route("/api", func(api chi.Router) {
-		api.Post("/fetch", fetchSvc.HandleFetch)
 		api.Get("/fetch", fetchSvc.HandleFetchGet)
 	})
 
