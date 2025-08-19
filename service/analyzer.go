@@ -107,7 +107,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 		}
 
 		// Check accessibility (simple HEAD request with timeout)
-		client := &http.Client{Timeout: 5 * time.Second}
+		client := &http.Client{Timeout: 1 * time.Second}
 		respHead, err := client.Head(absURL)
 		if err != nil || respHead.StatusCode < 200 || respHead.StatusCode >= 400 {
 			inaccessibleLinks[absURL] = struct{}{}
