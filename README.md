@@ -16,6 +16,8 @@ Web Analyzer API (Go)
 ├── go.sum
 ├── Dockerfile
 └── README.md
+<img width="244" height="269" alt="image" src="https://github.com/user-attachments/assets/03ad2ec7-7fba-4216-a651-3dc415d11e06" />
+
 
 This project is a simple Go web service that fetches and analyzes web page content.
 
