@@ -1,5 +1,8 @@
 Web Analyzer API (Go)
 
+Web contenet analyzer API is able to filter all the Headings and their level, Title, html version, login detaills and internal external and inaccessible links for given web page url.
+
+
 Pre requirements
 1. Install Docker Desktop
 2. Install Golang 1.24 version
