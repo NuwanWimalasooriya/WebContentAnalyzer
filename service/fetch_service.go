@@ -31,7 +31,7 @@ func (fs *FetchService) HandleFetchGet(w http.ResponseWriter, r *http.Request) {
 	url := strings.TrimSpace(r.URL.Query().Get("url"))
 	if url == "" {
 		fs.logger.Error("Missing URL parameter")
-		http.Error(w, "url parameter required", http.StatusBadRequest)
+		http.Error(w, "URL is required", http.StatusBadRequest)
 		return
 	}
 
@@ -53,7 +53,7 @@ func validateRequest(r *http.Request) (models.FetchRequest, error) {
 	var urlRegex = regexp.MustCompile(`^(https?:\/\/|www\.)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:[0-9]{1,5})?(\/.*)?$`)
 
 	if err != nil || strings.TrimSpace(request.URL) == "" {
-		return request, errors.New("invalid request payload")
+		return request, errors.New("Invalid request payload")
 	} else if !urlRegex.MatchString(request.URL) {
     return request, errors.New("Invalid URL")
 	}

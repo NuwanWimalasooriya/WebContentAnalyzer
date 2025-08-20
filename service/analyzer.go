@@ -27,7 +27,7 @@ func NewHTMLAnalyzer(logger *slog.Logger) *HTMLAnalyzer {
 }
 
 func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResponse {
-	start := time.Now()
+	
 	response := models.FetchResponse{
 		Headings:        []models.Heading{},
 		Links:           []string{},
@@ -36,7 +36,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 	}
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
-	ha.logger.Info("NewDocumentFromReader execution time", "duration", time.Since(start))
+	
 	if err != nil {
 		response.Error = err.Error()
 		ha.logger.Error("Failed to parse HTML", "err", err)
@@ -46,7 +46,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 	response.Title = strings.TrimSpace(doc.Find("title").First().Text())
 
 	response.HtmlVersion = findHtmlVersion(content)
-	ha.logger.Info("findHtmlVersion execution time", "duration", time.Since(start))
+	
 	headingsSet := map[string]struct{}{}
 	for i := 1; i <= 6; i++ {
 		selector := fmt.Sprintf("h%d", i)
@@ -69,7 +69,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 			}
 		})
 	}
-	ha.logger.Info("headingsSet execution time", "duration", time.Since(start))
+	
 	linksSet := map[string]struct{}{}
 	doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
 		href, _ := s.Attr("href")
@@ -81,13 +81,11 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 			}
 		}
 	})
-	ha.logger.Info("linksSet execution time", "duration", time.Since(start))
+	
 	base, _ := url.Parse(baseURL)
 	internalLinks := map[string]struct{}{}
 	externalLinks := map[string]struct{}{}
 	inaccessibleLinks := map[string]struct{}{}
-	start1:=time.Now()
-	
 
 		client := &http.Client{Timeout: 2 * time.Second}
 		var wg sync.WaitGroup
@@ -129,7 +127,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 			})
 
 			wg.Wait()
-	ha.logger.Info("linktypesanalyze execution time", "duration", time.Since(start1))
+	
 	// Fill response
 	response.InternalLinks = len(internalLinks)
 	response.ExternalLinks = len(externalLinks)
@@ -148,7 +146,6 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 
 	response.LoginIndicators = uniqueStrings(response.LoginIndicators)
 	ha.logger.Info("HTML analysis completed", "title", response.Title, "headings", len(response.Headings), "links", len(response.Links), "login_detected", response.LoginDetected)
-	ha.logger.Info("login check execution time", "duration", time.Since(start1))
 	return response
 }
 
@@ -177,13 +174,12 @@ for {
 
         switch token {
         case html.ErrorToken:
-            return "Unknown" // reached EOF without finding doctype
+            return "Unknown" 
 
         case html.DoctypeToken:
             t := tokenizer.Token()
             doc := strings.ToLower(t.Data)
 
-            // Basic checks
             if doc == "html" && len(t.Attr) == 0 {
                 return "HTML5"
             }
