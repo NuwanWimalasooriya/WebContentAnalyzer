@@ -47,7 +47,7 @@ Go to the main directory via the command prompt and execute below commands
 
 1. Open command prompt from the main folder
 2. Go into the service folder (cd service)
-3. Execute go test ./...
+3. Execute go test ./... -v
 
 # Challenges
 1. As I am new to golang, initially implemented single page. Then had to refer lot of videos articles to understand how to use middleware, pointers and refactoring techniques.
