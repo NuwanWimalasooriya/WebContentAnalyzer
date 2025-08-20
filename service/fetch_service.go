@@ -42,23 +42,23 @@ func (fs *FetchService) HandleFetchGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := fs.analyzer.Analyze(content,url)
-	writeJSON(w, resp, http.StatusOK)
+	response := fs.analyzer.Analyze(content,url)
+	writeJSON(w, response, http.StatusOK)
 }
 
 // Helpers
 func validateRequest(r *http.Request) (models.FetchRequest, error) {
-	var req models.FetchRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
+	var request models.FetchRequest
+	err := json.NewDecoder(r.Body).Decode(&request)
 	var urlRegex = regexp.MustCompile(`^(https?:\/\/|www\.)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:[0-9]{1,5})?(\/.*)?$`)
 
-	if err != nil || strings.TrimSpace(req.URL) == "" {
-		return req, errors.New("invalid request payload")
-	} else if !urlRegex.MatchString(req.URL) {
-    return req, errors.New("Invalid URL")
+	if err != nil || strings.TrimSpace(request.URL) == "" {
+		return request, errors.New("invalid request payload")
+	} else if !urlRegex.MatchString(request.URL) {
+    return request, errors.New("Invalid URL")
 	}
 
-	return req, nil
+	return request, nil
 }
 
 func writeJSON(w http.ResponseWriter, data interface{}, status int) {

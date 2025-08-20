@@ -17,9 +17,9 @@ func main() {
 
 	httpFetcher := service.NewContentPFetcher(15*time.Second, logger)
 	htmlAnalyzer := service.NewHTMLAnalyzer(logger)
-	fetchSvc := service.ContentFetchService(httpFetcher, htmlAnalyzer, logger)
+	fetchService := service.ContentFetchService(httpFetcher, htmlAnalyzer, logger)
 
-	r := NewRouter(logger, fetchSvc)
+	r := NewRouter(logger, fetchService)
 
 	slog.Info("Content Fetching Server started", "addr", ":8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
@@ -27,12 +27,12 @@ func main() {
 	}
 }
 
-func NewRouter(logger *slog.Logger, fetchSvc *service.FetchService) http.Handler {
+func NewRouter(logger *slog.Logger, fetchService *service.FetchService) http.Handler {
 	r := chi.NewRouter()
 	middlewarex.Register(r)
 
 	r.Route("/api", func(api chi.Router) {
-		api.Get("/fetch", fetchSvc.HandleFetchGet)
+		api.Get("/fetch", fetchService.HandleFetchGet)
 	})
 
 	return r

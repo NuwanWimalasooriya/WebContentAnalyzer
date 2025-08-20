@@ -28,7 +28,7 @@ func NewHTMLAnalyzer(logger *slog.Logger) *HTMLAnalyzer {
 
 func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResponse {
 	start := time.Now()
-	resp := models.FetchResponse{
+	response := models.FetchResponse{
 		Headings:        []models.Heading{},
 		Links:           []string{},
 		LoginDetected:   false,
@@ -38,14 +38,14 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
 	ha.logger.Info("NewDocumentFromReader execution time", "duration", time.Since(start))
 	if err != nil {
-		resp.Error = err.Error()
+		response.Error = err.Error()
 		ha.logger.Error("Failed to parse HTML", "err", err)
-		return resp
+		return response
 	}
 
-	resp.Title = strings.TrimSpace(doc.Find("title").First().Text())
+	response.Title = strings.TrimSpace(doc.Find("title").First().Text())
 
-	resp.HtmlVersion = findHtmlVersion(content)
+	response.HtmlVersion = findHtmlVersion(content)
 	ha.logger.Info("findHtmlVersion execution time", "duration", time.Since(start))
 	headingsSet := map[string]struct{}{}
 	for i := 1; i <= 6; i++ {
@@ -62,7 +62,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 			key := fmt.Sprintf("%s:%s", selector, text)
 			if _, exists := headingsSet[key]; !exists {
 				headingsSet[key] = struct{}{}
-				resp.Headings = append(resp.Headings, models.Heading{
+				response.Headings = append(response.Headings, models.Heading{
 					Level: selector,
 					Text:  text,
 				})
@@ -77,7 +77,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 		if href != "" && !strings.HasPrefix(href, "javascript:") && !strings.HasPrefix(href, "#") {
 			if _, exists := linksSet[href]; !exists {
 				linksSet[href] = struct{}{}
-				resp.Links = append(resp.Links, href)
+				response.Links = append(response.Links, href)
 			}
 		}
 	})
@@ -119,8 +119,8 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 				wg.Add(1)
 				go func(url string) {
 					defer wg.Done()
-					resp, err := client.Head(url)
-					if err != nil || resp.StatusCode < 200 || resp.StatusCode >= 400 {
+					response, err := client.Head(url)
+					if err != nil || response.StatusCode < 200 || response.StatusCode >= 400 {
 						mu.Lock()
 						inaccessibleLinks[url] = struct{}{}
 						mu.Unlock()
@@ -131,25 +131,25 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 			wg.Wait()
 	ha.logger.Info("linktypesanalyze execution time", "duration", time.Since(start1))
 	// Fill response
-	resp.InternalLinks = len(internalLinks)
-	resp.ExternalLinks = len(externalLinks)
-	resp.InaccessibleLinks = len(inaccessibleLinks)
+	response.InternalLinks = len(internalLinks)
+	response.ExternalLinks = len(externalLinks)
+	response.InaccessibleLinks = len(inaccessibleLinks)
 
 	if doc.Find("input[type='password']").Length() > 0 {
-		resp.LoginDetected = true
-		resp.LoginIndicators = append(resp.LoginIndicators, "password_input")
+		response.LoginDetected = true
+		response.LoginIndicators = append(response.LoginIndicators, "password_input")
 	}
 
 	pageText := strings.ToLower(normalizeSpace(doc.Text()))
 	if strings.Contains(pageText, "login") || strings.Contains(pageText, "sign in") {
-		resp.LoginDetected = true
-		resp.LoginIndicators = append(resp.LoginIndicators, "page_text_contains_login")
+		response.LoginDetected = true
+		response.LoginIndicators = append(response.LoginIndicators, "page_text_contains_login")
 	}
 
-	resp.LoginIndicators = uniqueStrings(resp.LoginIndicators)
-	ha.logger.Info("HTML analysis completed", "title", resp.Title, "headings", len(resp.Headings), "links", len(resp.Links), "login_detected", resp.LoginDetected)
+	response.LoginIndicators = uniqueStrings(response.LoginIndicators)
+	ha.logger.Info("HTML analysis completed", "title", response.Title, "headings", len(response.Headings), "links", len(response.Links), "login_detected", response.LoginDetected)
 	ha.logger.Info("login check execution time", "duration", time.Since(start1))
-	return resp
+	return response
 }
 
 func normalizeSpace(s string) string {

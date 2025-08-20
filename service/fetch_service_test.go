@@ -34,83 +34,83 @@ func setupMockServiceWithContent(content string) *service.FetchService {
 //  Test case for Title extraction
 func TestHandleFetchGet_Title(t *testing.T) {
 	htmlContent := `<html><title>My Test Title</title></html>`
-	fetchSvc := setupMockServiceWithContent(htmlContent)
+	fetchService := setupMockServiceWithContent(htmlContent)
 
-	req := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
+	request := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
 	w := httptest.NewRecorder()
-	fetchSvc.HandleFetchGet(w, req)
+	fetchService.HandleFetchGet(w, request)
 
-	resp := w.Result()
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("Expected 200, got %d", resp.StatusCode)
+	response := w.Result()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("Expected 200, got %d", response.StatusCode)
 	}
 
-	var fetchResp models.FetchResponse
-	if err := json.NewDecoder(resp.Body).Decode(&fetchResp); err != nil {
+	var fetchResponse models.FetchResponse
+	if err := json.NewDecoder(response.Body).Decode(&fetchResponse); err != nil {
 		t.Fatalf("Decode failed: %v", err)
 	}
 
-	if fetchResp.Title != "My Test Title" {
-		t.Errorf("Expected title 'My Test Title', got %s", fetchResp.Title)
+	if fetchResponse.Title != "My Test Title" {
+		t.Errorf("Expected title 'My Test Title', got %s", fetchResponse.Title)
 	}
 }
 
 //  Test case for Headings extraction
 func TestHandleFetchGet_Headings(t *testing.T) {
 	htmlContent := `<html><h1>Main Heading</h1><h2>Sub Heading</h2></html>`
-	fetchSvc := setupMockServiceWithContent(htmlContent)
+	fetchService := setupMockServiceWithContent(htmlContent)
 
-	req := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
+	request := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
 	w := httptest.NewRecorder()
-	fetchSvc.HandleFetchGet(w, req)
+	fetchService.HandleFetchGet(w, request)
 
-	resp := w.Result()
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("Expected 200, got %d", resp.StatusCode)
+	response := w.Result()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("Expected 200, got %d", response.StatusCode)
 	}
 
-	var fetchResp models.FetchResponse
-	if err := json.NewDecoder(resp.Body).Decode(&fetchResp); err != nil {
+	var fetchResponse models.FetchResponse
+	if err := json.NewDecoder(response.Body).Decode(&fetchResponse); err != nil {
 		t.Fatalf("Decode failed: %v", err)
 	}
 
-	if len(fetchResp.Headings) != 2 {
-		t.Fatalf("Expected 2 headings, got %d", len(fetchResp.Headings))
+	if len(fetchResponse.Headings) != 2 {
+		t.Fatalf("Expected 2 headings, got %d", len(fetchResponse.Headings))
 	}
-	if fetchResp.Headings[0].Text != "Main Heading" || fetchResp.Headings[0].Level != "h1" {
-		t.Errorf("Expected h1='Main Heading', got %+v", fetchResp.Headings[0])
+	if fetchResponse.Headings[0].Text != "Main Heading" || fetchResponse.Headings[0].Level != "h1" {
+		t.Errorf("Expected h1='Main Heading', got %+v", fetchResponse.Headings[0])
 	}
-	if fetchResp.Headings[1].Text != "Sub Heading" || fetchResp.Headings[1].Level != "h2" {
-		t.Errorf("Expected h2='Sub Heading', got %+v", fetchResp.Headings[1])
+	if fetchResponse.Headings[1].Text != "Sub Heading" || fetchResponse.Headings[1].Level != "h2" {
+		t.Errorf("Expected h2='Sub Heading', got %+v", fetchResponse.Headings[1])
 	}
 }
 
 // Test case for Links extraction
 func TestHandleFetchGet_Links(t *testing.T) {
 	htmlContent := `<html><a href="https://site1.com">One</a><a href="https://site2.com">Two</a></html>`
-	fetchSvc := setupMockServiceWithContent(htmlContent)
+	fetchService := setupMockServiceWithContent(htmlContent)
 
-	req := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
+	request := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
 	w := httptest.NewRecorder()
-	fetchSvc.HandleFetchGet(w, req)
+	fetchService.HandleFetchGet(w, request)
 
-	resp := w.Result()
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("Expected 200, got %d", resp.StatusCode)
+	response := w.Result()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("Expected 200, got %d", response.StatusCode)
 	}
 
-	var fetchResp models.FetchResponse
-	if err := json.NewDecoder(resp.Body).Decode(&fetchResp); err != nil {
+	var fetchResponse models.FetchResponse
+	if err := json.NewDecoder(response.Body).Decode(&fetchResponse); err != nil {
 		t.Fatalf("Decode failed: %v", err)
 	}
 
 	expected := []string{"https://site1.com", "https://site2.com"}
-	if len(fetchResp.Links) != len(expected) {
-		t.Fatalf("Expected %d links, got %d", len(expected), len(fetchResp.Links))
+	if len(fetchResponse.Links) != len(expected) {
+		t.Fatalf("Expected %d links, got %d", len(expected), len(fetchResponse.Links))
 	}
 	for i, link := range expected {
-		if fetchResp.Links[i] != link {
-			t.Errorf("Expected link %s, got %s", link, fetchResp.Links[i])
+		if fetchResponse.Links[i] != link {
+			t.Errorf("Expected link %s, got %s", link, fetchResponse.Links[i])
 		}
 	}
 }
@@ -142,22 +142,22 @@ func TestHandleFetchGet_HTMLVersion(t *testing.T) {
 		t.Run(testHtml.name, func(t *testing.T) {
 			fetchService := setupMockServiceWithContent(testHtml.htmlContent) 
 
-			req := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
+			request := httptest.NewRequest(http.MethodGet, "/fetch?url=http://example.com", nil)
 			w := httptest.NewRecorder()
-			fetchService.HandleFetchGet(w, req)
+			fetchService.HandleFetchGet(w, request)
 
-			resp := w.Result()
-			if resp.StatusCode != http.StatusOK {
-				t.Fatalf("Expected 200, got %d", resp.StatusCode)
+			response := w.Result()
+			if response.StatusCode != http.StatusOK {
+				t.Fatalf("Expected 200, got %d", response.StatusCode)
 			}
 
-			var fetchResp models.FetchResponse
-			if err := json.NewDecoder(resp.Body).Decode(&fetchResp); err != nil {
+			var fetchResponse models.FetchResponse
+			if err := json.NewDecoder(response.Body).Decode(&fetchResponse); err != nil {
 				t.Fatalf("Decode failed: %v", err)
 			}
 
-			if fetchResp.HtmlVersion != testHtml.expectedVersion {
-				t.Errorf("Expected HTML version %s, got %s", testHtml.expectedVersion, fetchResp.HtmlVersion)
+			if fetchResponse.HtmlVersion != testHtml.expectedVersion {
+				t.Errorf("Expected HTML version %s, got %s", testHtml.expectedVersion, fetchResponse.HtmlVersion)
 			}
 		})
 	}
