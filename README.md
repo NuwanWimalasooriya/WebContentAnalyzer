@@ -49,14 +49,14 @@ Go to the main directory via the command prompt and execute below commands
 2. Go into the service folder (cd service)
 3. Execute go test ./... -v
 
-# Challenges
+🔥 Challenges
 1. As I am new to golang, initially implemented single page. Then had to refer lot of videos articles to understand how to use middleware, pointers and refactoring techniques.
 2. Difficult to identify the requested informations like spefic kind of links then refered similar logic through intenet and customised as required
 3. Even created the docker image, it was not running properly and got help from internet to do some customizations.
-4. It took more than 5 minites to fetch a website like '[https://](https://elakiri.com/)' which is having more than 180 external links. Added WaitGroup and enabled parallel processing to reduce total fetching time like 10 seconds..
+4. It took more than 5 minites to fetch a website like '[https://](https://elakiri.com/)' which is having more than 180 external links. Used WaitGroup and mutex to enabled synchronize processing and reduced total fetching time like 10 seconds..
   
 
-# Possible Improvements
+🛠 Possible Improvements
  1. Analyzed responses can be saved in a database and then existing responses can be retrieved without doing analysis again.
  2. Authentication can be applied to avoid accessing unknown users.
    
