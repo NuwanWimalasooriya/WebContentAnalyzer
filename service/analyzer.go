@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"sync"
 
 	models "github.com/nuwanwimalasooriya/go-wa-api/models"
 	"github.com/PuerkitoBio/goquery"
@@ -26,6 +27,7 @@ func NewHTMLAnalyzer(logger *slog.Logger) *HTMLAnalyzer {
 }
 
 func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResponse {
+	start := time.Now()
 	resp := models.FetchResponse{
 		Headings:        []models.Heading{},
 		Links:           []string{},
@@ -34,6 +36,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 	}
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
+	ha.logger.Info("NewDocumentFromReader execution time", "duration", time.Since(start))
 	if err != nil {
 		resp.Error = err.Error()
 		ha.logger.Error("Failed to parse HTML", "err", err)
@@ -43,7 +46,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 	resp.Title = strings.TrimSpace(doc.Find("title").First().Text())
 
 	resp.HtmlVersion = findHtmlVersion(content)
-
+	ha.logger.Info("findHtmlVersion execution time", "duration", time.Since(start))
 	headingsSet := map[string]struct{}{}
 	for i := 1; i <= 6; i++ {
 		selector := fmt.Sprintf("h%d", i)
@@ -66,6 +69,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 			}
 		})
 	}
+	ha.logger.Info("headingsSet execution time", "duration", time.Since(start))
 	linksSet := map[string]struct{}{}
 	doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
 		href, _ := s.Attr("href")
@@ -77,43 +81,55 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 			}
 		}
 	})
+	ha.logger.Info("linksSet execution time", "duration", time.Since(start))
 	base, _ := url.Parse(baseURL)
 	internalLinks := map[string]struct{}{}
 	externalLinks := map[string]struct{}{}
 	inaccessibleLinks := map[string]struct{}{}
+	start1:=time.Now()
+	
 
-	doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
-		href, _ := s.Attr("href")
-		href = strings.TrimSpace(href)
-		if href == "" || strings.HasPrefix(href, "javascript:") || strings.HasPrefix(href, "#") {
-			return
-		}
+		client := &http.Client{Timeout: 2 * time.Second}
+		var wg sync.WaitGroup
+		var mu sync.Mutex
 
-		u, err := url.Parse(href)
-		if err != nil {
-			return
-		}
+			doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
+				href, _ := s.Attr("href")
+				href = strings.TrimSpace(href)
+				if href == "" || strings.HasPrefix(href, "javascript:") || strings.HasPrefix(href, "#") {
+					return
+				}
 
-		absURL := u.String()
-		if !u.IsAbs() && base != nil {
-			absURL = base.ResolveReference(u).String()
-		}
+				u, err := url.Parse(href)
+				if err != nil {
+					return
+				}
 
-		// Classify internal vs external
-		if base != nil && u.Host == base.Host {
-			internalLinks[absURL] = struct{}{}
-		} else {
-			externalLinks[absURL] = struct{}{}
-		}
+				absURL := u.String()
+				if !u.IsAbs() && base != nil {
+					absURL = base.ResolveReference(u).String()
+				}
 
-		// Check accessibility (simple HEAD request with timeout)
-		client := &http.Client{Timeout: 1 * time.Second}
-		respHead, err := client.Head(absURL)
-		if err != nil || respHead.StatusCode < 200 || respHead.StatusCode >= 400 {
-			inaccessibleLinks[absURL] = struct{}{}
-		}
-	})
+				if base != nil && u.Host == base.Host {
+					internalLinks[absURL] = struct{}{}
+				} else {
+					externalLinks[absURL] = struct{}{}
+				}
 
+				wg.Add(1)
+				go func(url string) {
+					defer wg.Done()
+					resp, err := client.Head(url)
+					if err != nil || resp.StatusCode < 200 || resp.StatusCode >= 400 {
+						mu.Lock()
+						inaccessibleLinks[url] = struct{}{}
+						mu.Unlock()
+					}
+				}(absURL)
+			})
+
+			wg.Wait()
+	ha.logger.Info("linktypesanalyze execution time", "duration", time.Since(start1))
 	// Fill response
 	resp.InternalLinks = len(internalLinks)
 	resp.ExternalLinks = len(externalLinks)
@@ -132,6 +148,7 @@ func (ha *HTMLAnalyzer) Analyze(content string, baseURL string) models.FetchResp
 
 	resp.LoginIndicators = uniqueStrings(resp.LoginIndicators)
 	ha.logger.Info("HTML analysis completed", "title", resp.Title, "headings", len(resp.Headings), "links", len(resp.Links), "login_detected", resp.LoginDetected)
+	ha.logger.Info("login check execution time", "duration", time.Since(start1))
 	return resp
 }
 

@@ -30,8 +30,9 @@ func NewContentPFetcher(timeout time.Duration, logger *slog.Logger) *ContentFetc
 
 func (hf *ContentFetcher) ContentFetch(ctx context.Context, url string) (string, error) {
 	hf.logger.Info("Fetching URL", "url", url)
-
+	start := time.Now()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	hf.logger.Info("HandleFetchGet execution time", "duration", time.Since(start))
 	if err != nil {
 		hf.logger.Error("Failed to create request", "url", url, "err", err)
 		return "", fmt.Errorf("creating request failed: %w", err)
