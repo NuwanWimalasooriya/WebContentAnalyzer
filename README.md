@@ -56,7 +56,7 @@ Go to the main directory via the command prompt and execute below commands
 4. It took more than 5 minites to fetch a website like '[https://](https://elakiri.com/)' which is having more than 180 external links. Used WaitGroup and mutex to enabled synchronize processing and reduced total fetching time like 10 seconds..
   
 
-# Possible Improvements
+🛠 Possible Improvements
  1. Analyzed responses can be saved in a database and then existing responses can be retrieved without doing analysis again.
  2. Authentication can be applied to avoid accessing unknown users.
    
