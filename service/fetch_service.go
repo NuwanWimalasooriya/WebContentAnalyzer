@@ -18,7 +18,7 @@ type FetchService struct {
 	logger   *slog.Logger
 }
 
-func NewFetchService(fetcher Fetcher, analyzer Analyzer, logger *slog.Logger) *FetchService {
+func ContentFetchService(fetcher Fetcher, analyzer Analyzer, logger *slog.Logger) *FetchService {
 	return &FetchService{
 		fetcher:  fetcher,
 		analyzer: analyzer,

@@ -17,7 +17,7 @@ func main() {
 
 	httpFetcher := service.NewContentPFetcher(15*time.Second, logger)
 	htmlAnalyzer := service.NewHTMLAnalyzer(logger)
-	fetchSvc := service.NewFetchService(httpFetcher, htmlAnalyzer, logger)
+	fetchSvc := service.ContentFetchService(httpFetcher, htmlAnalyzer, logger)
 
 	r := NewRouter(logger, fetchSvc)
 
